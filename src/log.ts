@@ -1,5 +1,5 @@
 //logger
-import * as Telemetry from './net/telemetry.ts'
+import {Telemetry} from "./net/telemetry.ts";
 
 export function debug(message: string) {
     console.debug(message);
