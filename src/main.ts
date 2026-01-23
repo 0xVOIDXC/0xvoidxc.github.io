@@ -1,10 +1,10 @@
 import './style.css'
 import JXG from 'jsxgraph'
-import { createHomepageOverlay } from "./interfaces/main_ui.ts";
-import { Telemetry } from "./net/telemetry.ts";
+import {createHomepageOverlay} from "./interfaces/main_ui.ts";
+import {Telemetry} from "./net/telemetry.ts";
 import * as keyboard_control from './control/keyboard.ts'
-import { gameLoop } from "./game_loop.ts";
-import { gameState, inputState, resetInputState, tick_increment } from "./global.ts";
+import {gameLoop} from "./game_loop.ts";
+import {gameState, inputState, resetInputState, tick_increment} from "./global.ts";
 import * as log from './log.ts'
 
 // root layout

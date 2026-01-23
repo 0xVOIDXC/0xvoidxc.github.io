@@ -1,5 +1,3 @@
-import * as log from './log.ts'
-
 export let inputState = {
     up: false,
     down: false,
@@ -7,7 +5,7 @@ export let inputState = {
     right: false,
     fire: false,
     interact: false,  // Optional: action keys
-} as let
+}
 
 interface Location {
     x: number,
@@ -20,9 +18,10 @@ export let gameState = {
     rendering: {
         entities: new Set()
     }
-} as let;
-export function tick_increment(){
-    gameState.ticks ++;
+}
+
+export function tick_increment() {
+    gameState.ticks++;
 }
 
 // Reset to idle state (call on disconnect/pause)
