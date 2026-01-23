@@ -1,0 +1,21 @@
+{
+  "name": "acidium_frontend",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "engineStrict": false,
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc && vite build",
+    "preview": "vite preview"
+  },
+  "devDependencies": {
+    "typescript": "~5.9.3",
+    "vite": "^7.2.4"
+  },
+  "dependencies": {
+    "axios": "^1.13.2",
+    "jsxgraph": "^1.12.2",
+    "winston-transport": "^4.9.0"
+  }
+}
