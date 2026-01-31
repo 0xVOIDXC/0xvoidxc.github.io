@@ -1,93 +1,111 @@
 import * as log from '../log.ts'
-import {inputState} from "../global.ts";
+import { inputState } from "../global.ts";
 
 /**
  * Global keyboard input handler.
  * Updates inputState singleton automatically.
  *
- * Call initInputHandler() once during startup.
+ * Call setup() once during startup.
  */
 export function setup(): void {
-    // Prevent scrolling
-    window.addEventListener('keydown', (e) => {
-        const key = e.code.toLowerCase()
-        log.debug(`key down ${key}`)
+    window.addEventListener('keydown', handleKeyDown);
+    window.addEventListener('keyup', handleKeyUp);
+    window.addEventListener('contextmenu', handleContextMenu);
 
-        // Movement keys
-        switch (key) {
-            case 'keyw':
-            case 'arrowup':
-                inputState.up = true
-                e.preventDefault()
-                return
-            case 'keys':
-            case 'arrowdown':
-                inputState.down = true
-                e.preventDefault()
-                return
-            case 'keya':
-            case 'arrowleft':
-                inputState.left = true
-                e.preventDefault()
-                return
-            case 'keyd':
-            case 'arrowright':
-                inputState.right = true
-                e.preventDefault()
-                return
-        }
-    })
-
-    window.addEventListener('keyup', (e) => {
-        const key = e.code.toLowerCase()
-
-        switch (key) {
-            case 'keyw':
-            case 'arrowup':
-                inputState.up = false
-                break
-            case 'keys':
-            case 'arrowdown':
-                inputState.down = false
-                break
-            case 'keya':
-            case 'arrowleft':
-                inputState.left = false
-                break
-            case 'keyd':
-            case 'arrowright':
-                inputState.right = false
-                break
-            case 'space':
-                inputState.fire = false
-                break
-            case 'enter':
-            case 'keye':
-                inputState.interact = false
-                break
-        }
-    })
-
-    // Prevent context menu on right-click
-    window.addEventListener('contextmenu', (e) => e.preventDefault())
+    log.info('Keyboard control initialized');
 }
 
 /**
- * Optional: Pause/resume input handling
+ * Detach listeners (e.g. when chat is open or game paused)
  */
 export function pauseInput(): void {
-    window.removeEventListener('keydown', keydownHandler)
-    window.removeEventListener('keyup', keyupHandler)
+    window.removeEventListener('keydown', handleKeyDown);
+    window.removeEventListener('keyup', handleKeyUp);
 }
 
+/**
+ * Re-attach listeners
+ */
 export function resumeInput(): void {
-    initInputHandler() // Re-attach
+    // Remove first to prevent duplicates
+    pauseInput();
+    setup();
 }
 
-// Private handlers (for pause/resume)
-const keydownHandler = (e: KeyboardEvent) => {
-    // Implementation above
+// ============================================================================
+// EVENT HANDLERS
+// ============================================================================
+
+function handleContextMenu(e: MouseEvent): void {
+    e.preventDefault();
 }
-const keyupHandler = (e: KeyboardEvent) => {
-    // Implementation above
+
+function handleKeyDown(e: KeyboardEvent): void {
+    const key = e.code.toLowerCase();
+
+    // Only prevent default for game keys to allow F5/F12/Ctrl+R
+    let handled = true;
+
+    switch (key) {
+        case 'keyw':
+        case 'arrowup':
+            inputState.up = true;
+            break;
+        case 'keys':
+        case 'arrowdown':
+            inputState.down = true;
+            break;
+        case 'keya':
+        case 'arrowleft':
+            inputState.left = true;
+            break;
+        case 'keyd':
+        case 'arrowright':
+            inputState.right = true;
+            break;
+        case 'space':
+            inputState.fire = true;
+            break;
+        case 'enter':
+        case 'keye':
+            inputState.interact = true;
+            break;
+        default:
+            handled = false;
+    }
+
+    if (handled) {
+        e.preventDefault();
+        // log.debug(`Key Down: ${key}`); // Uncomment for debugging
+    }
+}
+
+function handleKeyUp(e: KeyboardEvent): void {
+    const key = e.code.toLowerCase();
+
+    switch (key) {
+        case 'keyw':
+        case 'arrowup':
+            inputState.up = false;
+            break;
+        case 'keys':
+        case 'arrowdown':
+            inputState.down = false;
+            break;
+        case 'keya':
+        case 'arrowleft':
+            inputState.left = false;
+            break;
+        case 'keyd':
+        case 'arrowright':
+            inputState.right = false;
+            break;
+        case 'space':
+            inputState.fire = false;
+            break;
+        case 'enter':
+        case 'keye':
+            inputState.interact = false;
+            break;
+    }
 }
