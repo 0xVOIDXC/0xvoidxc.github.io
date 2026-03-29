@@ -76,7 +76,7 @@ function handleKeyDown(e: KeyboardEvent): void {
 
     if (handled) {
         e.preventDefault();
-        // log.debug(`Key Down: ${key}`); // Uncomment for debugging
+        // log.debug(`Key Down: ${key}`);
     }
 }
 
@@ -106,6 +106,9 @@ function handleKeyUp(e: KeyboardEvent): void {
         case 'enter':
         case 'keye':
             inputState.interact = false;
+            break;
+        case 'keyt':
+            inputState.chat = true;
             break;
     }
 }

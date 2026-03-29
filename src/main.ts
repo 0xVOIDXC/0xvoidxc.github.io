@@ -8,6 +8,8 @@ import {gameState, inputState, resetInputState, telemetry_options} from "./globa
 import * as log from './log.ts'
 import {sendTelemetry} from "./net/telemetry.ts";
 import {GameClient} from './net/game_client.ts';
+import {addChatMessage, isChatVisible, toggleChat} from './interfaces/chat.ts';
+
 
 /**
  * MAIN CLIENT ENTRY POINT
@@ -55,7 +57,7 @@ let connectionFailed = false;
 let pendingInputs: { dirX: number; dirY: number; fire: boolean; interact: boolean }[] = [];
 let nextClientTick: number = 0;
 
-let menu_mode:boolean = true;
+let menu_mode: boolean = true;
 
 // === DEBUG OVERLAY ===
 if (debug) {
@@ -343,6 +345,7 @@ export function updateTick(): void {
 
     const fire = inputState.fire;
     const interact = inputState.interact;
+    const chat = inputState.chat;
 
     // 2. Queue Input for Prediction
     if (pendingInputs.length < 30) {
@@ -350,7 +353,7 @@ export function updateTick(): void {
     }
 
     // 3. Send to Server
-    const speed = 20.0;
+    const speed = gameState.speed;
     const targetX = gameState.location.x + dirX * speed;
     const targetY = gameState.location.y + dirY * speed;
 
@@ -364,11 +367,19 @@ export function updateTick(): void {
 
     // Send Movement (Type 1)
     // This now sends 20 bytes: [Int Direction][Double X][Double Y]
-    gameClient.sendMovement(direction, targetX, targetY);
+    if (!gameState.paused) gameClient.sendMovement(nextClientTick, dirX, dirY);
 
     // Send Combat (Type 2)
     if (fire) {
         gameClient.sendCombat(0, 1); // Target 0, Action 1
+    }
+
+    // Bring up Chat Window
+    if (chat) {
+        if (!isChatVisible()) {
+            toggleChat(true);
+        }
+        inputState.chat = false;
     }
 
     nextClientTick++;
@@ -702,6 +713,7 @@ function startConnectionSequence(): void {
 
             // Hide connecting UI
             hideConnectingUI();
+            gameState.paused = true;
 
             // === START RENDERING LOOP ===
             gameLoop.start(
@@ -726,6 +738,8 @@ function startConnectionSequence(): void {
             };
             gameClient!.onDisconnect(safeDisconnect);
             gameClient!.onError(safeDisconnect);
+
+            gameState.paused = false;
         });
 
         // === SERVER MESSAGES ===
@@ -735,7 +749,7 @@ function startConnectionSequence(): void {
                 const ack = new Uint8Array(message)[0];
                 if (ack === 1 && pendingInputs.length > 0) {
                     const input = pendingInputs.shift()!;
-                    const speed = 20.0;
+                    const speed = gameState.speed;
                     gameState.location.x += input.dirX * speed;
                     gameState.location.y += input.dirY * speed;
                     if (input.fire) log.debug(`🔫 Fire @ (${gameState.location.x.toFixed(1)}, ${gameState.location.y.toFixed(1)})`);
@@ -776,13 +790,17 @@ function startConnectionSequence(): void {
 function handleJsonResponse(msg: any): void {
     switch (msg.type) {
         case 'ACCOUNT_REPLY':
-        case 'CHAT_FORWARD':
         case 'CRAFTING_REPLY':
         case 'ANNOUNCEMENT_REPLY':
             log.info(`${msg.type}:`, msg.payload);
             break;
         case 'EXCEPTION_SERVER':
             log.error('Server:', msg.payload);
+            break;
+        case "CHAT_FORWARD":
+            const sender = msg.payload.sender;
+            const message = msg.payload.message;
+            addChatMessage(sender, message);
             break;
         default:
             log.debug('JSON:', msg.type);

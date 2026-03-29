@@ -5,7 +5,8 @@ export let inputState = {
     right: false,
     fire: false,
     interact: false,  // Optional: action keys
-    inventory:false
+    inventory:false,
+    chat: false
 }
 // Add to global.ts
 export interface TelemetryEvent {
@@ -36,7 +37,8 @@ export let gameState = {
     rendering: {
         entities: new Set()
     },
-    paused: true
+    paused: true,
+    speed: 1.3
 }
 
 export function tick_increment() {
